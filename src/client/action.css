@@ -1,0 +1,57 @@
+/* Toolbar button in the document header, sized like the preview's own tools. */
+.pdfa-tool {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  border-radius: var(--dsw-radius-sm, 8px);
+  cursor: pointer;
+}
+
+.pdfa-tool svg {
+  width: 15px;
+  height: 15px;
+}
+
+.pdfa-tool:hover,
+.pdfa-tool[aria-pressed='true'] {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.pdfa-tool-count {
+  box-sizing: border-box;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  color: var(--dsw-alias-label-primary-foreground);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  background: var(--dsw-alias-button-primary-fill);
+  border-radius: 8px;
+  corner-shape: round;
+}
+
+.pdfa-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 120px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}

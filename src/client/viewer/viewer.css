@@ -1,0 +1,632 @@
+/* PDF annotator viewer. Colors come from DSH theme aliases so light and dark both work;
+   the highlight tint is a local presentation value laid over the always-white page. */
+
+.pdfa-root {
+  --pdfa-mark-fill: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #f5a524) 36%, transparent);
+  --pdfa-mark-strong: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #f5a524) 62%, transparent);
+  --pdfa-pending-fill: color-mix(in srgb, var(--dsw-alias-link, #3b82f6) 24%, transparent);
+  --pdfa-pending-stroke: color-mix(in srgb, var(--dsw-alias-link, #3b82f6) 70%, transparent);
+  container: pdfa / inline-size;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--dsw-font, system-ui, sans-serif);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: normal;
+}
+
+.pdfa-status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 160px;
+  padding: 16px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.pdfa-scroll {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  background: var(--dsw-alias-bg-document-preview);
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+}
+
+.pdfa-column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 100%;
+  padding: 12px;
+}
+
+/* ---- pages ------------------------------------------------------------ */
+
+.pdfa-page {
+  position: relative;
+  flex: none;
+  isolation: isolate;
+  background: #fff;
+  box-shadow: var(--dsw-elevation-prominent);
+}
+
+.pdfa-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  background: var(--dsw-alias-bg-skeleton);
+}
+
+.pdfa-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pdfa-canvas[hidden] {
+  display: none;
+}
+
+/* Multiply the tint into the page so the printed text stays crisp under it. */
+.pdfa-marks {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.pdfa-mark {
+  position: absolute;
+  border-radius: 2px;
+  background: var(--pdfa-mark-fill);
+  transition: background-color 120ms ease;
+}
+
+.pdfa-mark[data-state='hover'] {
+  background: var(--pdfa-mark-strong);
+}
+
+.pdfa-mark[data-state='flash'] {
+  background: var(--pdfa-mark-strong);
+  animation: pdfa-flash 1.4s ease-out 1;
+}
+
+.pdfa-mark[data-state='pending'] {
+  background: var(--pdfa-pending-fill);
+  outline: 1px dashed var(--pdfa-pending-stroke);
+}
+
+@keyframes pdfa-flash {
+  0%, 30%, 60% { opacity: 1; }
+  15%, 45% { opacity: 0.25; }
+  100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdfa-mark { transition: none; }
+  .pdfa-mark[data-state='flash'] { animation: none; }
+}
+
+/* Badges sit on the page itself, which is white paper in both themes, so they keep fixed ink colors. */
+.pdfa-badge {
+  position: absolute;
+  z-index: 3;
+  box-sizing: border-box;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+  background: #3a3f4b;
+  border-radius: 8px;
+  corner-shape: round;
+  transform: translate(calc(-100% - 4px), -3px);
+}
+
+.pdfa-badge[data-state='hover'],
+.pdfa-badge[data-state='flash'] {
+  color: #1f2430;
+  background: var(--dsw-alias-state-warn-primary, #f5a524);
+}
+
+/* Text layer: PDF.js TextLayerBuilder, styled after pdfjs-dist/web/pdf_viewer.css. */
+.pdfa-text {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: clip;
+}
+
+.pdfa-text .textLayer {
+  position: absolute;
+  inset: 0;
+  text-align: initial;
+  overflow: clip;
+  line-height: 1;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  caret-color: CanvasText;
+  z-index: 0;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+
+.pdfa-text .textLayer[data-main-rotation='90'] { transform: rotate(90deg) translateY(-100%); }
+.pdfa-text .textLayer[data-main-rotation='180'] { transform: rotate(180deg) translate(-100%, -100%); }
+.pdfa-text .textLayer[data-main-rotation='270'] { transform: rotate(270deg) translateX(-100%); }
+
+.pdfa-text :is(span, br) {
+  position: absolute;
+  color: transparent;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0 0;
+  user-select: text;
+}
+
+.pdfa-text .textLayer > :not(.markedContent),
+.pdfa-text .markedContent span:not(.markedContent) {
+  z-index: 1;
+  --font-height: 0;
+  --scale-x: 1;
+  --rotate: 0deg;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+
+.pdfa-text .markedContent {
+  display: contents;
+}
+
+.pdfa-text ::selection {
+  background: var(--dsw-alias-bg-document-selection, rgb(0 100 255 / 0.25));
+  color: transparent;
+}
+
+.pdfa-text br::selection {
+  background: transparent;
+}
+
+.pdfa-text .textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  inset: 100% 0 0;
+  z-index: 0;
+  cursor: default;
+  user-select: none;
+}
+
+.pdfa-text .selecting .endOfContent {
+  top: 0;
+}
+
+/* ---- floating surfaces ------------------------------------------------- */
+
+.pdfa-toolbar,
+.pdfa-editor,
+.pdfa-tip {
+  position: absolute;
+  z-index: 10;
+  box-sizing: border-box;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-layer-2);
+  border: 0;
+  box-shadow: var(--dsw-elevation-panel);
+}
+
+.pdfa-toolbar {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  white-space: nowrap;
+  border-radius: var(--dsw-radius-md, 12px);
+}
+
+.pdfa-toolbar-button {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--dsw-radius-sm, 8px);
+  cursor: pointer;
+}
+
+.pdfa-toolbar-button:hover,
+.pdfa-toolbar-button:focus-visible {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.pdfa-toolbar-button svg,
+.pdfa-button svg,
+.pdfa-icon-button svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.pdfa-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--dsw-radius-md, 12px);
+}
+
+.pdfa-editor-quote {
+  display: -webkit-box;
+  margin: 0;
+  padding-left: 8px;
+  overflow: hidden;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  border-left: 2px solid var(--pdfa-mark-strong);
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.pdfa-editor-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 64px;
+  padding: 6px 8px;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  background: var(--dsw-alias-bg-layer-1, transparent);
+  border: 0.5px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-sm, 8px);
+  outline: none;
+}
+
+.pdfa-editor-input:focus {
+  border-color: var(--dsw-alias-border-l1);
+}
+
+.pdfa-editor-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.pdfa-editor-hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}
+
+.pdfa-tip {
+  max-width: 260px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  border-radius: var(--dsw-radius-sm, 8px);
+}
+
+/* ---- buttons ----------------------------------------------------------- */
+
+.pdfa-button {
+  display: inline-flex;
+  flex: none;
+  gap: 5px;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  background: transparent;
+  border: 0.5px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-sm, 8px);
+  cursor: pointer;
+}
+
+.pdfa-button:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.pdfa-button-primary {
+  color: var(--dsw-alias-label-primary-foreground);
+  background: var(--dsw-alias-button-primary-fill);
+  border-color: transparent;
+}
+
+.pdfa-button-primary:hover:not(:disabled) {
+  background: var(--dsw-alias-button-primary-hover, var(--dsw-alias-button-primary-fill));
+}
+
+.pdfa-button-danger {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.pdfa-button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.pdfa-icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--dsw-alias-label-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: var(--dsw-radius-sm, 8px);
+  cursor: pointer;
+}
+
+.pdfa-icon-button:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.pdfa-link-button {
+  padding: 0;
+  color: var(--dsw-alias-link);
+  font: inherit;
+  font-weight: 500;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.pdfa-link-button:hover {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+.pdfa-spacer {
+  flex: 1 1 auto;
+}
+
+/* ---- list panel, notice, bar ------------------------------------------ */
+
+.pdfa-panel {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  max-height: 46%;
+  min-height: 0;
+  background: var(--dsw-alias-bg-layer-1, transparent);
+  border-top: 0.5px solid var(--dsw-alias-border-l3);
+}
+
+.pdfa-panel-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  height: 36px;
+  padding: 0 8px 0 14px;
+}
+
+.pdfa-panel-title {
+  flex: 1 1 auto;
+  font-weight: 600;
+}
+
+.pdfa-panel-empty {
+  margin: 0;
+  padding: 4px 14px 14px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.pdfa-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0 8px 4px;
+  overflow: auto;
+  list-style: none;
+}
+
+.pdfa-item {
+  padding: 8px 6px 10px;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l3);
+}
+
+.pdfa-item:last-child {
+  border-bottom: 0;
+}
+
+.pdfa-item-head {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.pdfa-item-badge {
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  color: var(--dsw-alias-label-primary-foreground);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  background: var(--dsw-alias-button-primary-fill);
+  border-radius: 9px;
+  corner-shape: round;
+}
+
+.pdfa-item-page {
+  padding: 0;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.pdfa-item-page:hover {
+  color: var(--dsw-alias-label-primary);
+}
+
+.pdfa-item-tools {
+  display: inline-flex;
+  margin-left: auto;
+}
+
+.pdfa-item-quote {
+  display: -webkit-box;
+  margin: 6px 0 0;
+  padding-left: 8px;
+  overflow: hidden;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  border-left: 2px solid var(--pdfa-mark-strong);
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.pdfa-item-comment {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.pdfa-panel-foot {
+  display: flex;
+  flex: none;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 10px;
+  border-top: 0.5px solid var(--dsw-alias-border-l3);
+}
+
+.pdfa-panel-hint {
+  margin: 0;
+  padding: 0 12px 8px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* Status strips above the action bar: storage trouble, the last "Send now", action notices. */
+.pdfa-strip {
+  display: flex;
+  flex: none;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 14px;
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  line-height: 1.5;
+  background: var(--dsw-alias-interactive-bg-hover);
+  border-top: 0.5px solid var(--dsw-alias-border-l3);
+}
+
+.pdfa-strip > span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pdfa-strip > button {
+  flex: none;
+}
+
+/* A state-colored border keeps its 1px weight. */
+.pdfa-strip[data-tone='warning'] {
+  background: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #f5a524) 14%, transparent);
+  border-top: 1px solid var(--dsw-alias-state-warn-primary, #f5a524);
+}
+
+.pdfa-strip[data-tone='progress'] {
+  color: var(--dsw-alias-label-secondary);
+}
+
+.pdfa-dock {
+  display: flex;
+  flex: none;
+  gap: 6px;
+  align-items: center;
+  box-sizing: border-box;
+  height: 42px;
+  padding: 0 8px;
+  background: var(--dsw-alias-bg-layer-1, transparent);
+  border-top: 0.5px solid var(--dsw-alias-border-l3);
+}
+
+.pdfa-dock-toggle {
+  border-color: transparent;
+}
+
+.pdfa-zoom {
+  display: inline-flex;
+  align-items: center;
+}
+
+.pdfa-zoom-value {
+  min-width: 44px;
+  height: 26px;
+  padding: 0 4px;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+  border: 0;
+  border-radius: var(--dsw-radius-sm, 8px);
+  cursor: pointer;
+}
+
+.pdfa-zoom-value:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* A narrow Sidebar keeps the comment controls and drops zoom (Ctrl+wheel still zooms). */
+@container pdfa (max-width: 360px) {
+  .pdfa-zoom { display: none; }
+}

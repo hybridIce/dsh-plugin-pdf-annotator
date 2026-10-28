@@ -1,0 +1,4 @@
+# Layer applied when a DSH profile lists this bundle: mount the plugin.
+- insert:
+    - id: pdf-annotator
+      name: dsh-plugin-pdf-annotator

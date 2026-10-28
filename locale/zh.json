@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "PDF 批注",
+    "description": "在 PDF 预览中选中句子、写批注，再把多条批注合成一条消息发给 Agent 处理。"
+  }
+}

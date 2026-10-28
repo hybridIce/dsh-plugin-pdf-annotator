@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "PDF Annotator",
+    "description": "Select sentences in a PDF preview, comment on them, and send all comments to the agent as one message."
+  }
+}
