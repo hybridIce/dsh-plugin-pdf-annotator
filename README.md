@@ -17,6 +17,22 @@ A DeepSeek Harness plugin for selecting PDF text, adding comments, and sending t
 
 需要 DeepSeek Harness **0.2.1-rc.3 或更新的 0.2.x 版本**。Harness 仍处于开发预览阶段，后续接口变化可能影响兼容性。
 
+### 在 App 的「发现」页安装
+
+1. 打开 **插件 → 实验性插件**，启用 **自定义插件索引**。
+2. 切换到 **发现 → 添加索引源**，粘贴以下地址：
+
+   ```text
+   https://raw.githubusercontent.com/hybridIce/dsh-plugin-pdf-annotator/main/index.json
+   ```
+
+3. 选择 **PDF 批注 · 社区插件** 索引，打开 **PDF 批注** 卡片，点击 **安装**并确认来源。
+4. 安装后启用插件，打开 PDF，在预览头部选择 **PDF 批注** 查看器。
+
+索引支持中英文名称和介绍。添加一次后即可从「发现」页浏览版本和安装；如果已经安装，卡片会显示 **已安装**。
+
+English: Enable the custom plugin index bundle, open **Discover**, and add the URL above. Select **PDF Annotator** to view its details and install.
+
 ### 从 GitHub 安装
 
 1. 打开 Harness 的 **插件 → 添加插件 → 安装第三方插件**。

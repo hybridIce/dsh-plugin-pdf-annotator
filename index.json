@@ -1,0 +1,56 @@
+{
+  "format": 1,
+  "title": {
+    "en": "PDF Annotator · Community plugin",
+    "zh": "PDF 批注 · 社区插件"
+  },
+  "description": {
+    "en": "PDF text selection, comments, and batch submission for DeepSeek Harness.",
+    "zh": "为 DeepSeek Harness 提供 PDF 选句、批注和批量发送功能。"
+  },
+  "plugins": [
+    {
+      "name": "dsh-plugin-pdf-annotator",
+      "title": {
+        "en": "PDF Annotator",
+        "zh": "PDF 批注"
+      },
+      "description": {
+        "en": "Select sentences in a PDF preview, comment on them, and send all comments to the agent as one message.",
+        "zh": "在 PDF 预览中选中句子、写批注，再把多条批注合成一条消息发给 Agent 处理。"
+      },
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB4PSIxMCIgeT0iNiIgd2lkdGg9IjM2IiBoZWlnaHQ9IjQ4IiByeD0iNSIgZmlsbD0iI2Y0ZjVmNyIgc3Ryb2tlPSIjM2EzZjRiIiBzdHJva2Utd2lkdGg9IjIuNSIvPjxyZWN0IHg9IjE3IiB5PSIxNyIgd2lkdGg9IjIyIiBoZWlnaHQ9IjUiIHJ4PSIxLjUiIGZpbGw9IiNmNWE1MjQiIG9wYWNpdHk9Ii43NSIvPjxwYXRoIGQ9Ik0xNyAyOGgyMk0xNyAzNWgxNiIgc3Ryb2tlPSIjM2EzZjRiIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTMzIDM4aDIwYTQgNCAwIDAgMSA0IDR2MTBhNCA0IDAgMCAxLTQgNGgtOGwtNiA1di01aC02YTQgNCAwIDAgMS00LTRWNDJhNCA0IDAgMCAxIDQtNFoiIGZpbGw9IiMxZjI0MzAiLz48cGF0aCBkPSJNMzggNDVoMTJNMzggNTBoOCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+Cg==",
+      "author": "hybridIce",
+      "homepage": "https://github.com/hybridIce/dsh-plugin-pdf-annotator#readme",
+      "repository": {
+        "url": "https://github.com/hybridIce/dsh-plugin-pdf-annotator"
+      },
+      "metadata": {
+        "keywords": [
+          "dsh-plugin",
+          "deepseek-harness",
+          "pdf",
+          "annotations",
+          "PDF 批注",
+          "选句",
+          "阅读",
+          "批量发送"
+        ]
+      },
+      "versions": [
+        {
+          "version": "0.1.2",
+          "publishTimestamp": 1793196156,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/hybridIce/dsh-plugin-pdf-annotator",
+            "commit": "30776b4c504014d32bb74c224e709bd7192aa306"
+          },
+          "engines": {
+            "dsh": ">=0.2.1-rc.3 <0.3.0"
+          }
+        }
+      ]
+    }
+  ]
+}
