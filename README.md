@@ -19,7 +19,7 @@ A DeepSeek Harness plugin for selecting PDF text, adding comments, and sending t
 
 ### 在 App 的「发现」页安装
 
-1. 打开 **插件 → 实验性插件**，启用 **自定义插件索引**。
+1. 打开 **插件 → 实验性插件 → 更多**，启用 **自定义插件索引**（部分版本名称为 **自定义插件市场**）。
 2. 切换到 **发现 → 添加索引源**，粘贴以下地址：
 
    ```text
