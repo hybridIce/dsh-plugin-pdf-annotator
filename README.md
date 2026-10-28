@@ -4,6 +4,14 @@
 
 A DeepSeek Harness plugin for selecting PDF text, adding comments, and sending them as a batch.
 
+## 效果预览
+
+选中的原文会显示编号高亮，批注集中在下方列表。攒好几条后，可一起插入输入框，补充要求再发送，也可直接提交这批批注。
+
+![PDF 原文高亮、两条批注及批量提交按钮](docs/images/pdf-annotations.png)
+
+*DeepSeek Harness 中的实际操作截图；文档内容为演示材料。*
+
 ## 功能
 
 - **选句批注**：拖选 PDF 文字，添加批注或仅引用原文。
